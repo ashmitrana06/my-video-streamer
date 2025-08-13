@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Stream with Upload</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            display: flex;
+            flex-direction: column; /* Changed to column to stack navbar, content */
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0; /* Remove body padding as container now handles it */
+            box-sizing: border-box;
+        }
+        /* Navbar styling */
+        .navbar {
+            width: 100%;
+            background-color: #4c51bf; /* Indigo */
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px; /* Space below navbar */
+        }
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 900px; /* Match content width */
+            margin: 0 auto;
+        }
+        .navbar-brand {
+            font-size: 1.75rem; /* text-3xl */
+            font-weight: bold; /* font-bold */
+            color: white;
+            text-decoration: none;
+        }
+        .navbar-nav a {
+            color: white;
+            font-weight: 500; /* Medium font weight */
+            margin-left: 1.5rem; /* Space between links */
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+        .navbar-nav a:hover {
+            color: #d1d5db; /* Light gray on hover */
+        }
+
+        /* Existing styles for video container and thumbnails */
+        .video-container {
+            color: white;
+            background: #020024;
+            background: linear-gradient(180deg,rgb(6, 0, 112) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            max-width: 90%;
+            width: 900px;
+            text-align: center;
+            margin-top: 20px; /* Space above video container */
+            margin-bottom: 20px; /* Space below video container */
+        }
+        video {
+            border-radius: 0.75rem;
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 1.5rem;
+            background-color: #000;
+        }
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+            padding: 0 1rem;
+        }
+        .thumbnail-item {
+            cursor: pointer;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            background: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+            border-radius: 20px;
+            backdrop-filter: blur(15px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(15px); /* Safari support */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
+        }
+        .thumbnail-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .thumbnail-item.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+        }
+        .thumbnail-item img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            display: block;
+            border-radius: 0.5rem;
+        }
+        .thumbnail-item p {
+            font-size: 0.8rem;
+            color: white;
+            padding: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+        .upload-form {
+            background: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+            border-radius: 20px;
+            backdrop-filter: blur(15px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(15px); /* Safari support */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
+            border: 1px dashed #cbd5e0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 40px; /* Add margin below upload form */
+        }
+        .upload-form input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+            border-radius: 20px;
+            backdrop-filter: blur(15px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(15px); /* Safari support */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
+        }
+        .upload-form button {
+            background-color: #4c51bf; /* Indigo */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .upload-form button:hover {
+            background-color: #434190;
+        }
+        .flash-message {
+            background-color: #bee3f8; /* Light blue */
+            color: #2b6cb0; /* Darker blue */
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #90cdf4;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Start -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/" class="navbar-brand">Frame Flow</a>
+            <div class="navbar-nav">
+                <a href="/">Home</a>
+                <a href="#upload-section">Upload Video</a>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <div class="video-container">
+        <h1 class="text-3xl font-bold text-white-800 mb-6">Videos</h1>
+
+        <!-- Flash messages display here -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="mb-4">
+                    {% for message in messages %}
+                        <li class="flash-message">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+       
+
+        <video id="videoPlayer" controls autoplay>
+            Your browser does not support the video tag.
+        </video>
+        <p class="text-white-600 text-sm">Now Playing: <span id="nowPlaying" class="font-medium text-white-700"></span></p>
+        <p class="text-wgite-500 text-xs mt-2">Click on a thumbnail above to watch the video, or upload a new one.</p>
+
+        <div id="thumbnail-grid" class="thumbnail-grid">
+            {% if video_data %}
+                {% for video in video_data %}
+                    <div class="thumbnail-item" data-video-file="{{ video.filename }}">
+                        <img src="{{ url_for('static', filename=video.thumbnail_url) }}"
+                             alt="Thumbnail for {{ video.filename }}"
+                             onerror="this.onerror=null;this.src='https://placehold.co/160x90/D1D5DB/1F2937?text=No+Thumbnail';">
+                        <p>{{ video.filename }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-gray-500 text-lg mt-4 mb-4">No videos found. Upload one below!</p>
+            {% endif %}
+        </div>
+
+        <div id="upload-section" class="upload-form">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Upload New Video</h2>
+            <form action="{{ url_for('upload_video') }}" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept="video/mp4,video/avi,video/mov,video/mkv,video/webm">
+                <button type="submit">Upload Video</button>
+            </form>
+            <p class="text-gray-500 text-xs mt-2">Supported formats: MP4, AVI, MOV, MKV, WEBM.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const nowPlaying = document.getElementById('nowPlaying');
+            const thumbnailItems = document.querySelectorAll('.thumbnail-item');
+
+            // Function to set the active thumbnail
+            function setActiveThumbnail(selectedThumbnail) {
+                thumbnailItems.forEach(item => item.classList.remove('selected'));
+                if (selectedThumbnail) {
+                    selectedThumbnail.classList.add('selected');
+                }
+            }
+
+            // Set initial video source and text based on the first thumbnail
+            if (thumbnailItems.length > 0) {
+                const initialThumbnail = thumbnailItems[0];
+                const initialVideo = initialThumbnail.dataset.videoFile;
+                videoPlayer.src = `/video_feed/${initialVideo}`;
+                nowPlaying.textContent = initialVideo;
+                videoPlayer.load(); // Load the video
+                videoPlayer.play(); // Attempt to play automatically
+                setActiveThumbnail(initialThumbnail); // Mark the first thumbnail as selected
+            } else {
+                nowPlaying.textContent = "No video selected"; // Update if no videos exist
+            }
+
+            // Add click listener to each thumbnail
+            thumbnailItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const selectedVideo = this.dataset.videoFile;
+                    videoPlayer.src = `/video_feed/${selectedVideo}`;
+                    nowPlaying.textContent = selectedVideo;
+                    videoPlayer.load(); // Load the new video source
+                    videoPlayer.play(); // Start playing the new video
+                    setActiveThumbnail(this); // Mark the clicked thumbnail as selected
+                });
+            });
+        });
+    </script>
+</body>
+</html>
